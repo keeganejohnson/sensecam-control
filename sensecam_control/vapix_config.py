@@ -314,7 +314,10 @@ class CameraConfiguration:
                          text_string: str = None, text_color: str = None,
                          text_background_color: str = None, rotation: int = None,
                          text_position: str = None, overlay_image: int = None,
-                         overlay_position: str = None):  # 5.2.4.1
+                         overlay_position: str = None,
+                         
+                         saveDir: str = None, cameraId: str = None # customized image save params
+                         ):  # 5.2.4.1
         """
         The requests specified in the JPEG/MJPG section are supported by those video products
         that use JPEG and MJPG encoding.
@@ -363,8 +366,17 @@ class CameraConfiguration:
                             params=payload)
 
         if resp.status_code == 200:
-            now = datetime.datetime.now()
-            with open(str(now.strftime("%d-%m-%Y_%Hh%Mm%Ss")) + ".jpg", 'wb') as var:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            if saveDir is not None and cameraId is not None:
+                savePath = saveDir + '/' + cameraId + '___' + now.strftime('%Y-%m-%dT%H-%M-%SZ') + ".jpg"
+            elif saveDir is not None:
+                savePath = saveDir + '/' + now.strftime('%Y-%m-%dT%H-%M-%SZ') + ".jpg"
+            elif cameraId is not None:
+                savePath = cameraId + '___' + now.strftime('%Y-%m-%dT%H-%M-%SZ') + ".jpg"
+            else:
+                savePath = now.strftime('%Y-%m-%dT%H-%M-%SZ') + ".jpg"
+
+            with open(savePath, 'wb') as var:
                 var.write(resp.content)
             return str('Image saved')
 
